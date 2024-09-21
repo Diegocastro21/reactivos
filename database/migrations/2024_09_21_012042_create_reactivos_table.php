@@ -15,17 +15,17 @@ return new class extends Migration
             $table->id();
             $table->string('codigo');
             $table->string('nombre');
-            $table->string('disponibilidad');
+            $table->enum('disponibilidad', ['total', 'media', 'poca', 'no hay']);
             $table->string('unidad_medida');
-            $table->double('cantidad_disponible');
+            $table->decimal('cantidad_disponible', total: 8, places: 2);
             $table->string('codigo_indicacion_peligro');
             $table->string('lote');
             $table->string('marca_fabricante');
             $table->string('url_ficha_seguridad');
             $table->date('fecha_vencimiento');
-            $table->string('columna_reactivo');
+            $table->string('nivel_reactivo');
             $table->string('columna_estante');
-            
+            $table->foreignId('estante_id');
             $table->timestamps();
         });
     }
