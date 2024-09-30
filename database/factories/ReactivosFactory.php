@@ -9,7 +9,7 @@ use App\Models\Estante;
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Model>
  */
-class ReactivoFactory extends Factory
+class ReactivosFactory extends Factory
 {
 
     protected $model = Reactivos::class;

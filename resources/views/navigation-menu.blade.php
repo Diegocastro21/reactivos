@@ -18,8 +18,26 @@
                 </div>
 
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    <x-nav-link href="{{ route('livewire.laboratorio-view') }}" :active="request()->routeIs('livewire.laboratorio-view')">
-                        {{ __('Ver Tabla') }}
+                    <x-nav-link href="{{ route('dashboard.laboratorio') }}" :active="request()->routeIs('livewire.laboratorio-view')">
+                        {{ __('Laboratorios') }}
+                    </x-nav-link>
+                </div>
+
+                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                    <x-nav-link href="{{ route('dashboard.estante') }}" :active="request()->routeIs('livewire.estante-view')">
+                        {{ __('Estante') }}
+                    </x-nav-link>
+                </div>
+
+                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                    <x-nav-link href="{{ route('dashboard.reactivo') }}" :active="request()->routeIs('livewire.reactivo-view')">
+                        {{ __('Reactivos') }}
+                    </x-nav-link>
+                </div>
+
+                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                    <x-nav-link href="{{ route('dashboard.pictogramas') }}" :active="request()->routeIs('livewire.pictogramas-view')">
+                        {{ __('Pictogramas') }}
                     </x-nav-link>
                 </div>
             </div>
