@@ -50,7 +50,7 @@
                                         Cantidad</th>
                                     <th
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Marca/Fabricante</th>
+                                        Marca</th>
                                     <th
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         Fecha Vencimiento</th>
@@ -64,7 +64,7 @@
                                         <td class="px-6 py-4 whitespace-nowrap">{{ $reactivo->disponibilidad }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap">{{ $reactivo->cantidad_disponible }}
                                             {{ $reactivo->unidad_medida }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap">{{ $reactivo->marca_fabricante }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">{{ $reactivo->marca }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             {{ $reactivo->fecha_vencimiento->format('d/m/Y') }}</td>
                                     </tr>
@@ -115,6 +115,7 @@
                                                     class="block text-sm font-medium text-gray-700">Disponibilidad</label>
                                                 <select id="disponibilidad" wire:model.defer="disponibilidad"
                                                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                                                    <option value="">Seleccione una Disponibilidad</option>
                                                     <option value="total">Total</option>
                                                     <option value="media">Media</option>
                                                     <option value="poca">Poca</option>
@@ -129,14 +130,23 @@
                                                 <label for="unidad_medida"
                                                     class="block text-sm font-medium text-gray-700">Unidad de
                                                     Medida</label>
-                                                <input type="text" id="unidad_medida"
-                                                    wire:model.defer="unidad_medida"
+                                                <select id="unidad_medida" wire:model.defer="unidad_medida"
                                                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                                                    <option value="">Seleccione una Unidad de Medida</option>
+                                                    <option value="g">Gramos (g)</option>
+                                                    <option value="mg">Miligramos (mg)</option>
+                                                    <option value="ml">Mililitros (ml)</option>
+                                                    <option value="l">Litros (l)</option>
+                                                </select>
+                                                {{-- <input type="text" id="unidad_medida"
+                                                    wire:model.defer="unidad_medida"
+                                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"> --}}
                                                 @error('unidad_medida')
                                                     <span class="text-red-500 text-xs">{{ $message }}</span>
                                                 @enderror
                                             </div>
 
+                                            {{-- (['g', 'mg', 'ml', 'l']), --}}
                                             <div>
                                                 <label for="cantidad_disponible"
                                                     class="block text-sm font-medium text-gray-700">Cantidad
@@ -172,12 +182,21 @@
                                             </div>
 
                                             <div>
-                                                <label for="marca_fabricante"
-                                                    class="block text-sm font-medium text-gray-700">Marca/Fabricante</label>
-                                                <input type="text" id="marca_fabricante"
-                                                    wire:model.defer="marca_fabricante"
+                                                <label for="marca"
+                                                    class="block text-sm font-medium text-gray-700">Marca</label>
+                                                <input type="text" id="marca" wire:model.defer="marca"
                                                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
-                                                @error('marca_fabricante')
+                                                @error('marca')
+                                                    <span class="text-red-500 text-xs">{{ $message }}</span>
+                                                @enderror
+                                            </div>
+
+                                            <div>
+                                                <label for="fabricante"
+                                                    class="block text-sm font-medium text-gray-700">Fabricante</label>
+                                                <input type="text" id="fabricante" wire:model.defer="fabricante"
+                                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                                                @error('fabricante')
                                                     <span class="text-red-500 text-xs">{{ $message }}</span>
                                                 @enderror
                                             </div>
@@ -199,7 +218,7 @@
                                                     class="block text-sm font-medium text-gray-700">Fecha de
                                                     Vencimiento</label>
                                                 <input type="date" id="fecha_vencimiento"
-                                                    wire:model.defer="fecha_vencimiento"
+                                                    wire:model.lazy="fecha_vencimiento"
                                                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
                                                 @error('fecha_vencimiento')
                                                     <span class="text-red-500 text-xs">{{ $message }}</span>
@@ -234,8 +253,17 @@
                                                 <label for="estante_id"
                                                     class="block text-sm font-medium text-gray-700">ID del
                                                     Estante</label>
-                                                <input type="number" id="estante_id" wire:model.defer="estante_id"
+                                                {{-- <input type="number" id="estante_id" wire:model.defer="estante_id"
+                                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"> --}}
+
+                                                <select id="estante_id" wire:model.defer="estante_id"
                                                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                                                    <option value="">Seleccione un Estante</option>
+                                                    @foreach ($estantes as $estante)
+                                                        <option value="{{ $estante->id }}">
+                                                            {{ $estante->no_estante }} || {{$estante->descripcion}}</option>
+                                                    @endforeach
+                                                </select>
                                                 @error('estante_id')
                                                     <span class="text-red-500 text-xs">{{ $message }}</span>
                                                 @enderror

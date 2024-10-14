@@ -69,6 +69,8 @@ class EstanteView extends Component
             ->paginate($this->perPage);
 
 
+
+
         return view('livewire.estante-view', [
             'estantes' => $estantes,
             'laboratorios' => $laboratorios,
