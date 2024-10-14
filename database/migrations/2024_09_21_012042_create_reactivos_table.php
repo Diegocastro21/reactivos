@@ -20,7 +20,8 @@ return new class extends Migration
             $table->decimal('cantidad_disponible', total: 8, places: 2);
             $table->string('codigo_indicacion_peligro');
             $table->string('lote');
-            $table->string('marca_fabricante');
+            $table->string('marca');
+            $table->string('fabricante');
             $table->string('url_ficha_seguridad');
             $table->date('fecha_vencimiento');
             $table->string('nivel_reactivo');
