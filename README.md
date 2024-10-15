@@ -1,3 +1,37 @@
+Instalación y Configuración del proyecto
+
+necesitas tener instalado previamente esto:
+
+- Node JS ya que se utiliza npm con vite
+- Git
+- Php 8.2+
+- Composer
+- Mysql
+
+Luego que cumplas con lo anterior, haz lo siguiente
+
+```
+mysql.server start
+o activa mysql con xampp
+```
+
+```
+composer install
+npm install
+cp .env.example .env
+php artisan key:generate
+php artisan migrate
+```
+
+```
+en una consola ejecutas
+php artisan serve
+en otra consola ejecutas
+npm run dev
+```
+
+
+
 <p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
 
 <p align="center">
