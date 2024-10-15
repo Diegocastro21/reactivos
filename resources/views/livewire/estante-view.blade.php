@@ -5,21 +5,21 @@
             <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg">
                 <div class="p-6 sm:px-20 bg-white border-b border-gray-200">
                     <div class="mt-8 text-2xl flex justify-between">
-                        <div>Estantes</div>
+                        <div class="uppercase font-bold">Estantes</div>
                         <div class="flex items-center">
-                            <button wire:click="openModal" class="px-4 py-2 bg-blue-500 text-white rounded-md mr-4">
+                            <button wire:click="openModal" class="px-4 py-2 bg-red-500 text-white rounded-md mr-4">
                                 Crear Estante
                             </button>
-                            <form wire:submit.prevent="render" class="flex">
-                                <input wire:model.debounce.300ms="search" type="text" placeholder="Buscar..."
+
+                                <input wire:model.live="search" type="text" placeholder="Buscar..."
                                     class="rounded-md shadow-sm border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
-                                <select wire:model="perPage"
+                                <select wire:model.live="perPage"
                                     class="ml-4 rounded-md shadow-sm border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
                                     @foreach ([10, 25, 50, 100] as $value)
                                         <option value="{{ $value }}">{{ $value }}</option>
                                     @endforeach
                                 </select>
-                            </form>
+
                         </div>
                     </div>
                 </div>
@@ -96,11 +96,11 @@
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th class="cursor-pointer px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" wire:click="order('no_estante')">
                                 Número de Estante</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th class="cursor-pointer px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" wire:click="order('descripcion')">
                                 Descripción</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th class="cursor-pointer px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" wire:click="order('laboratorio_id')">
                                 Laboratorio</th>
                         </tr>
                     </thead>

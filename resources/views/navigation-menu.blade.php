@@ -6,7 +6,8 @@
                 <!-- Logo -->
                 <div class="shrink-0 flex items-center">
                     <a href="{{ route('dashboard') }}">
-                        <x-application-mark class="block h-9 w-auto" />
+                        {{-- <x-application-mark class="block h-9 w-auto" /> --}}
+                        <img src="{{ asset('images/favicon-unisinu.webp') }}" alt="Logo" class="block h-9 w-auto" />
                     </a>
                 </div>
 
@@ -36,10 +37,18 @@
                 </div>
 
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                    <x-nav-link href="{{ route('dashboard.proveedor') }}" :active="request()->routeIs('livewire.proveedor-view')">
+                        {{ __('Proveedor') }}
+                    </x-nav-link>
+                </div>
+
+                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                     <x-nav-link href="{{ route('dashboard.pictogramas') }}" :active="request()->routeIs('livewire.pictogramas-view')">
                         {{ __('Pictogramas') }}
                     </x-nav-link>
                 </div>
+
+
             </div>
 
             <div class="hidden sm:flex sm:items-center sm:ms-6">

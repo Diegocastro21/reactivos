@@ -12,6 +12,9 @@ class LaboratorioView extends Component
 
     public $search = '';
     public $perPage = 10;
+    public $sort = 'id';
+    public $direction = 'desc';
+
     public $showModal = false;
 
     public $nombre;
@@ -65,16 +68,35 @@ class LaboratorioView extends Component
         session()->flash('message', 'Laboratorio creado exitosamente.');
     }
 
+
+
+
     public function render()
     {
         $laboratorios = Laboratorio::where('nombre', 'like', '%'.$this->search.'%')
             ->orWhere('ubicacion', 'like', '%'.$this->search.'%')
             ->orWhere('coordinador', 'like', '%'.$this->search.'%')
             ->orWhere('ciudad', 'like', '%'.$this->search.'%')
+            ->orderBy($this->sort, $this->direction)
             ->paginate($this->perPage);
 
         return view('livewire.laboratorio-view', [
             'laboratorios' => $laboratorios,
         ]);
+    }
+
+    public function order($sort){
+        if($this->sort == $sort){
+
+            if($this->direction == 'desc'){
+                $this->direction = 'asc';
+            }else {
+                $this->direction = 'desc';
+            }
+
+        }else{
+            $this->sort = $sort;
+            $this->direction = 'asc';
+        }
     }
 }

@@ -14,6 +14,8 @@ class ReactivoView extends Component
 
     public $search = '';
     public $perPage = 10;
+    public $sort = 'id';
+    public $direction = 'desc';
 
     public $modal = false;
 
@@ -153,11 +155,14 @@ class ReactivoView extends Component
             ->orWhere('nombre', 'like', '%'.$this->search.'%')
             ->orWhere('disponibilidad', 'like', '%'.$this->search.'%')
             ->orWhere('marca', 'like', '%'.$this->search.'%')
+            ->orderBy($this->sort, $this->direction)
             ->paginate($this->perPage);
 
-            $estantes = Estante::where('no_estante', 'like', '%' . $this->search . '%')
-            ->orWhere('descripcion', 'like', '%' . $this->search . '%')
-            ->paginate($this->perPage);
+            $estantes = Estante::all();
+
+            // $estantes = Estante::where('no_estante', 'like', '%' . $this->search . '%')
+            // ->orWhere('descripcion', 'like', '%' . $this->search . '%')
+            // ->paginate($this->perPage);
 
 
         //     $ubicacionOcupada = DivisionUbicacionReactivo::where('estante_id', $this->estante_id)
@@ -175,5 +180,20 @@ class ReactivoView extends Component
             'reactivos' => $reactivos,
             'estantes' => $estantes,
         ]);
+    }
+
+    public function order($sort){
+        if($this->sort == $sort){
+
+            if($this->direction == 'desc'){
+                $this->direction = 'asc';
+            }else {
+                $this->direction = 'desc';
+            }
+
+        }else{
+            $this->sort = $sort;
+            $this->direction = 'asc';
+        }
     }
 }
