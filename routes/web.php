@@ -32,6 +32,13 @@ Route::get('pictogramas', function () {
     ->middleware(['auth', 'verified'])
     ->name('dashboard.pictogramas');
 
+Route::get('proveedores', function () {
+    $laboratorios = Reactivos::paginate(10);
+    return view('dashboard.proveedor');
+})
+    ->middleware(['auth', 'verified'])
+    ->name('dashboard.proveedor');
+
 
 Route::get('/', function () {
     return view('welcome');

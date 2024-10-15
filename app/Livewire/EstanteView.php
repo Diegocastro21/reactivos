@@ -13,6 +13,10 @@ class EstanteView extends Component
 
     public $search = '';
     public $perPage = 10;
+    public $sort = 'id';
+    public $direction = 'desc';
+
+
     public $showModal = false;
     public $no_estante;
     public $descripcion;
@@ -59,21 +63,33 @@ class EstanteView extends Component
     {
         $estantes = Estante::where('no_estante', 'like', '%' . $this->search . '%')
             ->orWhere('descripcion', 'like', '%' . $this->search . '%')
+            ->orWhereHas('laboratorio', function ($query) {
+                $query->where('nombre', 'like', '%' . $this->search . '%');
+            })
+            ->orderBy($this->sort, $this->direction)
             ->paginate($this->perPage);
 
 
-            $laboratorios = Laboratorio::where('nombre', 'like', '%'.$this->search.'%')
-            ->orWhere('ubicacion', 'like', '%'.$this->search.'%')
-            ->orWhere('coordinador', 'like', '%'.$this->search.'%')
-            ->orWhere('ciudad', 'like', '%'.$this->search.'%')
-            ->paginate($this->perPage);
-
-
-
+            $laboratorios = Laboratorio::all();
 
         return view('livewire.estante-view', [
             'estantes' => $estantes,
             'laboratorios' => $laboratorios,
         ]);
+    }
+
+    public function order($sort){
+        if($this->sort == $sort){
+
+            if($this->direction == 'desc'){
+                $this->direction = 'asc';
+            }else {
+                $this->direction = 'desc';
+            }
+
+        }else{
+            $this->sort = $sort;
+            $this->direction = 'asc';
+        }
     }
 }
