@@ -24,9 +24,12 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             // ... otros seeders
+            CategoriasSeeder::class,
+            PictogramasSeeder::class,
+            ProveedorSeeder::class,
             EstanteSeeder::class,
             ReactivoSeeder::class,
-            ProveedorSeeder::class,
+            
         ]);
     }
 }

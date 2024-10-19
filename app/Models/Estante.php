@@ -28,10 +28,7 @@ class Estante extends Model
         return $this->belongsTo(Laboratorio::class);
     }
 
-    public function divisionesUbicacion()
-    {
-        return $this->hasMany(DivisionUbicacionReactivo::class);
-    }
+    
 
     public function posiciones()
     {

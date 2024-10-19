@@ -6,6 +6,9 @@ use Livewire\Component;
 use App\Models\Reactivos;
 use App\Models\Estante;
 use App\Models\Posicion;
+use App\Models\Pictogramas;
+use App\Models\Proveedor;
+use App\Models\Categorias;
 use Livewire\WithPagination;
 use App\Models\DivisionUbicacionReactivo;
 
@@ -35,10 +38,18 @@ class ReactivoView extends Component
     // public $columna_estante;
     public $estante_id;
 
+    public $pictogramasSeleccionados = [];
+    public $buscarProveedor = '';
+    public $proveedoresSeleccionados = [];
+    public $buscarCategoria = '';
+    public $categoriasSeleccionadas = [];
+
     public $posicionSeleccionada;
     public $estantes;
     public $posiciones;
     public $estanteSeleccionado;
+
+    public $proveedores = [];
 
     // public $estantes;
     // public $niveles = [];
@@ -116,6 +127,17 @@ class ReactivoView extends Component
         $this->resetPage();
     }
 
+    public function updatingBuscarProveedor()
+    {
+        // $this->proveedores = Proveedor::where('nombre', 'like', '%' . $this->buscarProveedor . '%')->get();
+        $this->resetPage();
+    }
+
+    public function updatedBuscarCategoria()
+    {
+        $this->resetPage();
+    }
+
     public function updatedEstanteId()
     {
         $this->cargarPosiciones();
@@ -123,14 +145,14 @@ class ReactivoView extends Component
 
     public function openModal()
     {
-        $this->reset(['codigo', 'nombre', 'disponibilidad', 'unidad_medida', 'cantidad_disponible', 'codigo_indicacion_peligro', 'lote', 'marca', 'fabricante', 'url_ficha_seguridad', 'fecha_vencimiento', 'estante_id']);
+        $this->reset(['codigo', 'nombre', 'disponibilidad', 'unidad_medida', 'cantidad_disponible', 'codigo_indicacion_peligro', 'lote', 'marca', 'fabricante', 'url_ficha_seguridad', 'fecha_vencimiento', 'pictogramasSeleccionados', 'proveedoresSeleccionados', 'categoriasSeleccionadas', 'estante_id']);
         $this->modal = true;
     }
 
     public function closeModal()
     {
         $this->modal = false;
-        $this->reset(['codigo', 'nombre', 'disponibilidad', 'unidad_medida', 'cantidad_disponible', 'codigo_indicacion_peligro', 'lote', 'marca', 'fabricante', 'url_ficha_seguridad', 'fecha_vencimiento', 'estante_id']);
+        $this->reset(['codigo', 'nombre', 'disponibilidad', 'unidad_medida', 'cantidad_disponible', 'codigo_indicacion_peligro', 'lote', 'marca', 'fabricante', 'url_ficha_seguridad', 'fecha_vencimiento','pictogramasSeleccionados', 'proveedoresSeleccionados', 'categoriasSeleccionadas', 'estante_id']);
     }
 
     public function cargarPosiciones()
@@ -157,6 +179,33 @@ class ReactivoView extends Component
         $this->posicionSeleccionada = $posicionId;
     }
 
+    public function togglePictograma($pictogramaId)
+    {
+        if (in_array($pictogramaId, $this->pictogramasSeleccionados)) {
+            $this->pictogramasSeleccionados = array_diff($this->pictogramasSeleccionados, [$pictogramaId]);
+        } else {
+            $this->pictogramasSeleccionados[] = $pictogramaId;
+        }
+    }
+
+    public function toggleProveedor($proveedorId)
+    {
+        if (in_array($proveedorId, $this->proveedoresSeleccionados)) {
+            $this->proveedoresSeleccionados = array_diff($this->proveedoresSeleccionados, [$proveedorId]);
+        } else {
+            $this->proveedoresSeleccionados[] = $proveedorId;
+        }
+    }
+
+    public function toggleCategoria($categoriaId)
+    {
+        if (in_array($categoriaId, $this->categoriasSeleccionadas)) {
+            $this->categoriasSeleccionadas = array_diff($this->categoriasSeleccionadas, [$categoriaId]);
+        } else {
+            $this->categoriasSeleccionadas[] = $categoriaId;
+        }
+    }
+
     public function guardar()
     {
         $this->validate();
@@ -175,13 +224,18 @@ class ReactivoView extends Component
             'fabricante' => $this->fabricante,
             'url_ficha_seguridad' => $this->url_ficha_seguridad,
             'fecha_vencimiento' => $this->fecha_vencimiento,
-            // 'nivel_reactivo' => $this->nivel_reactivo,
-            // 'columna_estante' => $this->columna_estante,
             'estante_id' => $this->estante_id,
         ]);
 
         // Actualizar la posición
         Posicion::find($this->posicionSeleccionada)->update(['reactivos_id' => $reactivo->id]);
+
+        // Adjuntar pictogramas seleccionados
+        $reactivo->pictogramas()->attach($this->pictogramasSeleccionados);
+
+        $reactivo->proveedores()->attach($this->proveedoresSeleccionados);
+
+        $reactivo->categorias()->attach($this->categoriasSeleccionadas);
 
         $this->closeModal();
         session()->flash('message', 'Reactivo creado exitosamente.');
@@ -198,25 +252,30 @@ class ReactivoView extends Component
 
             $this->estantes = Estante::all();
 
-            // $estantes = Estante::where('no_estante', 'like', '%' . $this->search . '%')
-            // ->orWhere('descripcion', 'like', '%' . $this->search . '%')
-            // ->paginate($this->perPage);
+            $pictogramas = Pictogramas::all();
 
+            // $this->proveedores = Proveedor::where('nombre', 'like', '%'.$this->buscarProveedor.'%')->get();
 
-        //     $ubicacionOcupada = DivisionUbicacionReactivo::where('estante_id', $this->estante_id)
-        //     ->where('nivel', $this->nivel_reactivo)
-        //     ->where('columna', $this->columna_estante)
-        //     // ->whereHas('reactivo')
-        //     ->exists();
+            if ($this->buscarProveedor) {
+                $this->proveedores = Proveedor::where('nombre', 'like', '%'.$this->buscarProveedor.'%')->get();
+            } else {
+                $this->proveedores = Proveedor::whereIn('id', $this->proveedoresSeleccionados)->get();
+            }
 
-        // if ($ubicacionOcupada) {
-        //     $this->addError('ubicacion', 'Esta ubicación ya está ocupada por otro reactivo.');
-        //     return;
-        // }
+            if($this->buscarCategoria){
+                $categorias = Categorias::where('nombre', 'like', '%'.$this->buscarCategoria.'%')->get();
+            } else {
+                $categorias = Categorias::whereIn('id', $this->categoriasSeleccionadas)->get();
+            }
+
+        
 
         return view('livewire.reactivo-view', [
             'reactivos' => $reactivos,
             'estantes' => $this->estantes,
+            'proveedores' => $this->proveedores,
+            'categorias' => $categorias,
+            'pictogramas' => $pictogramas,
         ]);
     }
 

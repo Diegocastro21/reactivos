@@ -9,9 +9,11 @@ class Pictogramas extends Model
 {
     use HasFactory;
 
+    protected $fillable = ['nombre', 'imagen'];
 
-    public function reactivos(): MorphToMany
+
+    public function reactivos()
     {
-        return $this->morphToMany(Reactivos::class, 'taggable');
+        return $this->belongsToMany(Reactivos::class, 'pictograma_reactivo');
     }
 }

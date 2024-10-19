@@ -16,15 +16,11 @@ class EstanteSeeder extends Seeder
      */
     public function run(): void
     {
-        //
-        // Crear 20 estantes aleatorios
-        // Estante::factory()->count(20)->create();
 
         Estante::factory()
             ->count(20)
             ->create()
             ->each(function ($estante) {
-                logger()->info('Creando posiciones para el estante ID: ' . $estante->id);
                 
                 for ($fila = 1; $fila <= $estante->filas; $fila++) {
                     for ($columna = 1; $columna <= $estante->columnas; $columna++) {
@@ -40,19 +36,5 @@ class EstanteSeeder extends Seeder
                 logger()->info('Posiciones creadas para el estante ID: ' . $estante->id);
             });
 
-        // Crear algunos estantes específicos
-        // $laboratorio = Laboratorio::first();
-        
-        // Estante::factory()->create([
-        //     'no_estante' => 'A-01',
-        //     'descripcion' => 'Estante para reactivos orgánicos',
-        //     'laboratorio_id' => $laboratorio->id,
-        // ]);
-
-        // Estante::factory()->create([
-        //     'no_estante' => 'B-02',
-        //     'descripcion' => 'Estante para ácidos',
-        //     'laboratorio_id' => $laboratorio->id,
-        // ]);
     }
 }

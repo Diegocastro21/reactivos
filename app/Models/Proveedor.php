@@ -27,8 +27,13 @@ class Proveedor extends Model
     // $table->string('ciudad');
     // $table->string('pais');
 
-    public function reactivos(): MorphToMany
+    // public function reactivos(): MorphToMany
+    // {
+    //     return $this->morphToMany(Reactivos::class, 'taggable');
+    // }
+
+    public function reactivos()
     {
-        return $this->morphToMany(Reactivos::class, 'taggable');
+        return $this->belongsToMany(Reactivos::class, 'proveedor_reactivo');
     }
 }
