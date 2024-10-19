@@ -45,19 +45,19 @@ class Reactivos extends Model
     }
 
 
-    public function categorias(): MorphToMany
+    public function pictogramas()
     {
-        return $this->morphToMany(Categoria::class, 'taggable');
+        return $this->belongsToMany(Pictogramas::class, 'pictograma_reactivo');
     }
 
-    public function pictogramas(): MorphToMany
+    public function proveedores()
     {
-        return $this->morphToMany(Pictogramas::class, 'taggable');
+        return $this->belongsToMany(Proveedor::class, 'proveedor_reactivo');
     }
 
-    public function proveedores(): MorphToMany
+    public function categorias()
     {
-        return $this->morphToMany(Proveedor::class, 'taggable');
+        return $this->belongsToMany(Categorias::class, 'categoria_reactivo');
     }
 
     public function registros_historicos(): MorphMany

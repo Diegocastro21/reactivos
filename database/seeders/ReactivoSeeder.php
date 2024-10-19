@@ -7,6 +7,9 @@ use Illuminate\Database\Seeder;
 // use Database\Factories\ReactivoFactory;
 use App\Models\Reactivos;
 use App\Models\Posicion;
+use App\Models\Proveedor;
+use App\Models\Pictogramas;
+use App\Models\Categorias;
 
 class ReactivoSeeder extends Seeder
 {
@@ -42,26 +45,19 @@ class ReactivoSeeder extends Seeder
             } else {
                 logger()->warning("No hay posiciones disponibles para el reactivo {$reactivo->id}");
             }
+
+
+            // Asignar pictogramas aleatorios al reactivo
+            $pictogramas = Pictogramas::inRandomOrder()->take(rand(1, 3))->pluck('id');
+            $reactivo->pictogramas()->attach($pictogramas);
+
+            $proveedores = Proveedor::inRandomOrder()->take(rand(1, 3))->pluck('id');
+            $reactivo->proveedores()->attach($proveedores);
+
+            $categorias = Categorias::inRandomOrder()->take(rand(1, 3))->pluck('id');
+            $reactivo->categorias()->attach($categorias);
+
         });
 
-        //
-        // Reactivos::factory()->count(30)->create();
-
-        // Puedes agregar algunos registros específicos si lo deseas
-        // Reactivos::factory()->create([
-        //     'codigo' => 'ESP001',
-        //     'nombre' => 'Ácido Sulfúrico',
-        //     'disponibilidad' => 'total',
-        //     'unidad_medida' => 'l',
-        //     'cantidad_disponible' => 5.00,
-        // ]);
-
-        // Reactivos::factory()->create([
-        //     'codigo' => 'ESP002',
-        //     'nombre' => 'Hidróxido de Sodio',
-        //     'disponibilidad' => 'media',
-        //     'unidad_medida' => 'g',
-        //     'cantidad_disponible' => 500.00,
-        // ]);
     }
 }

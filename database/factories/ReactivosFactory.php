@@ -5,6 +5,7 @@ namespace Database\Factories;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Models\Reactivos;
 use App\Models\Estante;
+use App\Models\Pictogramas;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Model>
@@ -34,9 +35,15 @@ class ReactivosFactory extends Factory
             'fabricante' => $this->faker->company,
             'url_ficha_seguridad' => $this->faker->url,
             'fecha_vencimiento' => $this->faker->dateTimeBetween('+1 year', '+5 years'),
-            // 'nivel_reactivo' => $this->faker->numberBetween(1, 5),
-            // 'columna_estante' => $this->faker->randomLetter,
-            // 'estante_id' => Estante::factory(),
         ];
     }
+
+    // public function configure()
+    // {
+    //     return $this->afterCreating(function (Reactivos $reactivo) {
+    //         // Asignar pictogramas aleatorios al reactivo
+    //         $pictogramas = Pictogramas::inRandomOrder()->take(rand(1, 3))->pluck('id');
+    //         $reactivo->pictogramas()->attach($pictogramas);
+    //     });
+    // }
 }

@@ -11,11 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('division_ubicacion_reactivos', function (Blueprint $table) {
+        Schema::create('pictograma_reactivo', function (Blueprint $table) {
             $table->id();
-            $table->string('columna');
-            $table->string('nivel');
-            $table->foreignId('estante_id');
+            $table->foreignId('reactivos_id')->constrained()->onDelete('cascade');
+            $table->foreignId('pictogramas_id')->constrained()->onDelete('cascade');
             $table->timestamps();
         });
     }
@@ -25,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('division_ubicacion_reactivos');
+        Schema::dropIfExists('pictogramas_reactivos');
     }
 };
