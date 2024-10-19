@@ -24,10 +24,11 @@ return new class extends Migration
             $table->string('fabricante');
             $table->string('url_ficha_seguridad');
             $table->date('fecha_vencimiento');
-            $table->string('nivel_reactivo');
-            $table->string('columna_estante');
-            $table->foreignId('estante_id');
+            $table->foreignId('estante_id')->nullable(); // Puede estar relacionado con un estante
             $table->timestamps();
+            // $table->string('columna_estante');
+            // $table->string('nivel_reactivo');
+            // $table->foreignId('estante_id');
         });
     }
 
