@@ -34,9 +34,9 @@ class ReactivosFactory extends Factory
             'fabricante' => $this->faker->company,
             'url_ficha_seguridad' => $this->faker->url,
             'fecha_vencimiento' => $this->faker->dateTimeBetween('+1 year', '+5 years'),
-            'nivel_reactivo' => $this->faker->numberBetween(1, 5),
-            'columna_estante' => $this->faker->randomLetter,
-            'estante_id' => Estante::factory(),
+            // 'nivel_reactivo' => $this->faker->numberBetween(1, 5),
+            // 'columna_estante' => $this->faker->randomLetter,
+            // 'estante_id' => Estante::factory(),
         ];
     }
 }

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Reactivos extends Model
 {
@@ -23,8 +24,8 @@ class Reactivos extends Model
         'fabricante',
         'url_ficha_seguridad',
         'fecha_vencimiento',
-        'nivel_reactivo',
-        'columna_estante',
+        // 'nivel_reactivo',
+        // 'columna_estante',
         'estante_id',
     ];
 
@@ -36,6 +37,11 @@ class Reactivos extends Model
     public function estante()
     {
         return $this->belongsTo(Estante::class);
+    }
+
+    public function posicion(): HasOne
+    {
+        return $this->hasOne(Posicion::class);
     }
 
 

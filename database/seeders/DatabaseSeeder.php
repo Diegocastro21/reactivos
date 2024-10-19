@@ -24,6 +24,7 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             // ... otros seeders
+            EstanteSeeder::class,
             ReactivoSeeder::class,
             ProveedorSeeder::class,
         ]);

@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+use Illuminate\Database\Eloquent\Relations\HasMany;
+
 class Estante extends Model
 {
     use HasFactory;
@@ -14,6 +16,8 @@ class Estante extends Model
     protected $fillable = [
         'no_estante',
         'descripcion',
+        'filas',
+        'columnas',
         'laboratorio_id',
     ];
 
@@ -28,4 +32,11 @@ class Estante extends Model
     {
         return $this->hasMany(DivisionUbicacionReactivo::class);
     }
+
+    public function posiciones()
+    {
+        return $this->hasMany(Posicion::class);
+    }
+
+
 }

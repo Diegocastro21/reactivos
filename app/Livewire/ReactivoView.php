@@ -5,6 +5,7 @@ namespace App\Livewire;
 use Livewire\Component;
 use App\Models\Reactivos;
 use App\Models\Estante;
+use App\Models\Posicion;
 use Livewire\WithPagination;
 use App\Models\DivisionUbicacionReactivo;
 
@@ -30,9 +31,14 @@ class ReactivoView extends Component
     public $fabricante;
     public $url_ficha_seguridad;
     public $fecha_vencimiento;
-    public $nivel_reactivo;
-    public $columna_estante;
+    // public $nivel_reactivo;
+    // public $columna_estante;
     public $estante_id;
+
+    public $posicionSeleccionada;
+    public $estantes;
+    public $posiciones;
+    public $estanteSeleccionado;
 
     // public $estantes;
     // public $niveles = [];
@@ -50,8 +56,8 @@ class ReactivoView extends Component
         'fabricante' => 'required|string|max:255',
         'url_ficha_seguridad' => 'required|url|max:255',
         'fecha_vencimiento' => 'required|date|after:today',
-        'nivel_reactivo' => 'required|string',
-        'columna_estante' => 'required|string',
+        // 'nivel_reactivo' => 'required|string',
+        // 'columna_estante' => 'required|string',
         'estante_id' => 'required|exists:estante,id',
     ];
 
@@ -100,8 +106,8 @@ class ReactivoView extends Component
 
         'estante_id.required' => 'Debe seleccionar un estante.',
         'estante_id.exists' => 'El estante seleccionado no es válido.',
-        'nivel_reactivo.required' => 'Debe seleccionar un nivel.',
-        'columna_estante.required' => 'Debe seleccionar una columna.',
+        // 'nivel_reactivo.required' => 'Debe seleccionar un nivel.',
+        // 'columna_estante.required' => 'Debe seleccionar una columna.',
 
     ];
 
@@ -110,16 +116,45 @@ class ReactivoView extends Component
         $this->resetPage();
     }
 
+    public function updatedEstanteId()
+    {
+        $this->cargarPosiciones();
+    }
+
     public function openModal()
     {
-        $this->reset(['codigo', 'nombre', 'disponibilidad', 'unidad_medida', 'cantidad_disponible', 'codigo_indicacion_peligro', 'lote', 'marca', 'fabricante', 'url_ficha_seguridad', 'fecha_vencimiento', 'nivel_reactivo', 'columna_estante', 'estante_id']);
+        $this->reset(['codigo', 'nombre', 'disponibilidad', 'unidad_medida', 'cantidad_disponible', 'codigo_indicacion_peligro', 'lote', 'marca', 'fabricante', 'url_ficha_seguridad', 'fecha_vencimiento', 'estante_id']);
         $this->modal = true;
     }
 
     public function closeModal()
     {
         $this->modal = false;
-        $this->reset(['codigo', 'nombre', 'disponibilidad', 'unidad_medida', 'cantidad_disponible', 'codigo_indicacion_peligro', 'lote', 'marca', 'fabricante', 'url_ficha_seguridad', 'fecha_vencimiento', 'nivel_reactivo', 'columna_estante', 'estante_id']);
+        $this->reset(['codigo', 'nombre', 'disponibilidad', 'unidad_medida', 'cantidad_disponible', 'codigo_indicacion_peligro', 'lote', 'marca', 'fabricante', 'url_ficha_seguridad', 'fecha_vencimiento', 'estante_id']);
+    }
+
+    public function cargarPosiciones()
+    {
+        if ($this->estante_id) {
+            $this->estanteSeleccionado = Estante::find($this->estante_id);
+            $posiciones = Posicion::where('estante_id', $this->estante_id)->get();
+            
+            $this->posiciones = [];
+            for ($fila = 0; $fila < $this->estanteSeleccionado->filas; $fila++) {
+                for ($columna = 0; $columna < $this->estanteSeleccionado->columnas; $columna++) {
+                    $posicion = $posiciones->where('fila', $fila + 1)->where('columna', $columna + 1)->first();
+                    $this->posiciones[$fila][$columna] = [
+                        'id' => $posicion ? $posicion->id : null,
+                        'ocupada' => $posicion ? $posicion->reactivos_id !== null : false
+                    ];
+                }
+            }
+        }
+    }
+
+    public function seleccionarPosicion($posicionId)
+    {
+        $this->posicionSeleccionada = $posicionId;
     }
 
     public function guardar()
@@ -128,7 +163,7 @@ class ReactivoView extends Component
 
         session()->flash('message', 'Reactivo validado exitosamente.');
 
-        Reactivos::create([
+        $reactivo = Reactivos::create([
             'codigo' => $this->codigo,
             'nombre' => $this->nombre,
             'disponibilidad' => $this->disponibilidad,
@@ -140,10 +175,13 @@ class ReactivoView extends Component
             'fabricante' => $this->fabricante,
             'url_ficha_seguridad' => $this->url_ficha_seguridad,
             'fecha_vencimiento' => $this->fecha_vencimiento,
-            'nivel_reactivo' => $this->nivel_reactivo,
-            'columna_estante' => $this->columna_estante,
+            // 'nivel_reactivo' => $this->nivel_reactivo,
+            // 'columna_estante' => $this->columna_estante,
             'estante_id' => $this->estante_id,
         ]);
+
+        // Actualizar la posición
+        Posicion::find($this->posicionSeleccionada)->update(['reactivos_id' => $reactivo->id]);
 
         $this->closeModal();
         session()->flash('message', 'Reactivo creado exitosamente.');
@@ -158,7 +196,7 @@ class ReactivoView extends Component
             ->orderBy($this->sort, $this->direction)
             ->paginate($this->perPage);
 
-            $estantes = Estante::all();
+            $this->estantes = Estante::all();
 
             // $estantes = Estante::where('no_estante', 'like', '%' . $this->search . '%')
             // ->orWhere('descripcion', 'like', '%' . $this->search . '%')
@@ -178,7 +216,7 @@ class ReactivoView extends Component
 
         return view('livewire.reactivo-view', [
             'reactivos' => $reactivos,
-            'estantes' => $estantes,
+            'estantes' => $this->estantes,
         ]);
     }
 

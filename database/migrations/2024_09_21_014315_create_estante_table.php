@@ -15,6 +15,8 @@ return new class extends Migration
             $table->id();
             $table->string('no_estante');
             $table->string('descripcion');
+            $table->integer('filas');   
+            $table->integer('columnas'); 
             $table->foreignId('laboratorio_id');
             $table->timestamps();
         });

@@ -23,6 +23,8 @@ class EstanteFactory extends Factory
         return [
             'no_estante' => $this->faker->unique()->numberBetween(1, 100),
             'descripcion' => $this->faker->sentence(),
+            'filas' => $this->faker->numberBetween(2, 5), 
+            'columnas' => $this->faker->numberBetween(2, 5),
             'laboratorio_id' => Laboratorio::factory(),
         ];
     }
