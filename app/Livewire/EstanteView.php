@@ -19,9 +19,10 @@ class EstanteView extends Component
 
 
     public $showModal = false;
+    public $verModal = false;
+    public $miEstante = null;
+    
     public $no_estante;
-
-
     public $descripcion;
     public $filas;
     public $columnas;
@@ -40,44 +41,128 @@ class EstanteView extends Component
         $this->resetPage();
     }
 
-    public function openModal()
+    public function openModal(Estante $estante = null)
     {
-        $this->reset(['no_estante', 'descripcion', 'filas', 'columnas', 'laboratorio_id']);
+        if($estante){
+            $this->miEstante = $estante;
+            $this->no_estante = $estante->no_estante;
+            $this->descripcion = $estante->descripcion;
+            $this->filas = $estante->filas;
+            $this->columnas = $estante->columnas;
+            $this->laboratorio_id = $estante->laboratorio_id;
+
+        }else{
+            $this->reset(['no_estante', 'descripcion', 'filas', 'columnas', 'laboratorio_id', 'miEstante']);
+        }
         $this->showModal = true;
     }
 
     public function closeModal()
     {
         $this->showModal = false;
-        $this->reset(['no_estante', 'descripcion','filas', 'columnas', 'laboratorio_id']);
+        $this->reset(['no_estante', 'descripcion','filas', 'columnas', 'laboratorio_id', 'miEstante']);
     }
 
-    public function guardar()
+    public function openVerModal(Estante $estante)
+    {
+        $this->reset(['no_estante', 'descripcion', 'filas', 'columnas', 'laboratorio_id', 'miEstante']);
+
+
+        $this->no_estante = $estante->no_estante;
+        $this->descripcion = $estante->descripcion;
+        $this->filas = $estante->filas;
+        $this->columnas = $estante->columnas;
+        $this->laboratorio_id = $estante->laboratorio_id;
+
+        $this->verModal = true;
+    }
+
+    public function closeVerModal()
+    {
+        $this->verModal = false;
+        $this->reset(['no_estante', 'descripcion','filas', 'columnas', 'laboratorio_id', 'miEstante']);
+    }
+
+    public function guardarOActualizar()
     {
         $this->validate();
 
-        $estante = Estante::create([
-            'no_estante' => $this->no_estante,
-            'descripcion' => $this->descripcion,
-            'filas' => $this->filas,
-            'columnas' => $this->columnas,
-            'laboratorio_id' => $this->laboratorio_id,
-        ]);
+        if(isset($this->miEstante->id)){
+            $this->miEstante->update([
+                'no_estante' => $this->no_estante,
+                'descripcion' => $this->descripcion,
+                'filas' => $this->filas,
+                'columnas' => $this->columnas,
+                'laboratorio_id' => $this->laboratorio_id,
+            ]);
 
-        // Crear las posiciones en función de las filas y columnas
-        for ($fila = 1; $fila <= $this->filas; $fila++) {
-            for ($columna = 1; $columna <= $this->columnas; $columna++) {
-                Posicion::create([
-                    'estante_id' => $estante->id,
-                    'fila' => $fila,
-                    'columna' => $columna,
-                    'reactivos_id' => null, // Inicialmente sin reactivo
-                ]);
+            // Obtener las posiciones actuales del estante
+            $posicionesActuales = Posicion::where('estante_id', $this->miEstante->id)->get() ?? collect();
+
+            // Crear un array para las nuevas posiciones
+            $nuevasPosiciones = [];
+
+
+            // Crear las posiciones en función de las filas y columnas
+            for ($fila = 1; $fila <= $this->filas; $fila++) {
+                for ($columna = 1; $columna <= $this->columnas; $columna++) {
+                    $posicionExistente = $posicionesActuales->first(function ($posicion) use ($fila, $columna) {
+                        return $posicion->fila == $fila && $posicion->columna == $columna;
+                    });
+
+                    if ($posicionExistente) {
+                        // Si la posición ya existe, mantenerla
+                        $nuevasPosiciones[] = $posicionExistente->id;
+                    } else {
+                        // Si la posición no existe, crear una nueva
+                        $nuevaPosicion = Posicion::create([
+                            'estante_id' => $this->miEstante->id,
+                            'fila' => $fila,
+                            'columna' => $columna,
+                            'reactivos_id' => null, // Inicialmente sin reactivo
+                        ]);
+                        $nuevasPosiciones[] = $nuevaPosicion->id;
+                    }
+                }
             }
+
+            // Eliminar las posiciones que ya no son necesarias
+            Posicion::where('estante_id', $this->miEstante->id)
+            ->whereNotIn('id', $nuevasPosiciones)
+            ->delete();
+
+
+            $this->closeModal();
+            session()->flash('message', 'Estante actualizado exitosamente.');
+
+        }else {
+
+
+            $estante = Estante::create([
+                'no_estante' => $this->no_estante,
+                'descripcion' => $this->descripcion,
+                'filas' => $this->filas,
+                'columnas' => $this->columnas,
+                'laboratorio_id' => $this->laboratorio_id,
+            ]);
+    
+            // Crear las posiciones en función de las filas y columnas
+            for ($fila = 1; $fila <= $this->filas; $fila++) {
+                for ($columna = 1; $columna <= $this->columnas; $columna++) {
+                    Posicion::create([
+                        'estante_id' => $estante->id,
+                        'fila' => $fila,
+                        'columna' => $columna,
+                        'reactivos_id' => null, // Inicialmente sin reactivo
+                    ]);
+                }
+            }
+    
+            $this->closeModal();
+            session()->flash('message', 'Estante creado exitosamente.');
+
         }
 
-        $this->closeModal();
-        session()->flash('message', 'Estante creado exitosamente.');
     }
 
     public function render()

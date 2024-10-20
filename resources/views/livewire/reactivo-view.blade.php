@@ -48,25 +48,37 @@
                                     <th class="cursor-pointer px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                                         wire:click="order('cantidad_disponible')">
                                         Cantidad</th>
-                                    <th class="cursor-pointer px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                                    {{-- <th class="cursor-pointer px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                                         wire:click="order('marca')">
-                                        Marca</th>
+                                        Marca</th> --}}
                                     <th class="cursor-pointer px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                                         wire:click="order('fecha_vencimiento')">
                                         Fecha Vencimiento</th>
+                                    <th class="cursor-pointer px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                                        wire:click="">
+                                        Funciones</th>
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
                                 @foreach ($reactivos as $reactivo)
                                     <tr>
-                                        <td class="px-6 py-4 whitespace-nowrap">{{ $reactivo->codigo }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap">{{ $reactivo->nombre }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap">{{ $reactivo->disponibilidad }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap">{{ $reactivo->cantidad_disponible }}
+                                        <td class="px-6 py-4 break-words">{{ $reactivo->codigo }}</td>
+                                        <td class="px-6 py-4 break-words">{{ $reactivo->nombre }}</td>
+                                        <td class="px-6 py-4 break-words">{{ $reactivo->disponibilidad }}</td>
+                                        <td class="px-6 py-4 break-words">{{ $reactivo->cantidad_disponible }}
                                             {{ $reactivo->unidad_medida }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap">{{ $reactivo->marca }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
+                                        {{-- <td class="px-6 py-4 break-words">{{ $reactivo->marca }}</td> --}}
+                                        <td class="px-6 py-4 break-words">
                                             {{ $reactivo->fecha_vencimiento->format('d/m/Y') }}</td>
+                                        <td class="px-6 py-4 break-words">
+                                            <button wire:click="openVerModal({{ $reactivo }})"
+                                                class=" p-2 bg-red-500 text-white rounded-md ">
+                                                Ver
+                                            </button> | <button wire:click="openModal({{ $reactivo }})"
+                                                class=" p-2 bg-red-500 text-white rounded-md ">
+                                                Editar
+                                            </button>
+                                        </td>
                                     </tr>
                                 @endforeach
                             </tbody>
@@ -86,10 +98,10 @@
                                 <div class="m-8 my-20 max-w-[400px] mx-auto">
                                     <div class="mb-8">
                                         <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
-                                            Crear Nuevo Reactivo
+                                            {{ isset($miReactivo->id) ? 'Actualizar' : 'Crear' }} Reactivo
                                         </h3>
 
-                                        <form wire:submit="guardar" class="space-y-4">
+                                        <form wire:submit="guardarOActualizar" class="space-y-4">
                                             <div>
                                                 <label for="codigo"
                                                     class="block text-sm font-medium text-gray-700">Código</label>
@@ -331,31 +343,7 @@
                                                 @enderror
                                             </div>
 
-                                            {{-- @if ($estante_id && $posiciones)
-                                                <div>
-                                                    <label
-                                                        class="block text-sm font-medium text-gray-700 mb-2">Seleccione
-                                                        una posición:</label>
-                                                    <div
-                                                        class="grid grid-cols-{{ $estanteSeleccionado->columnas }} gap-2">
-                                                        @foreach ($posiciones as $fila => $columnas)
-                                                            @foreach ($columnas as $columna => $posicion)
-                                                                <div>
-                                                                    <button type="button"
-                                                                        wire:click="seleccionarPosicion({{ $posicion['id'] }})"
-                                                                        class="w-full h-12 flex items-center justify-center rounded-md {{ $posicion['ocupada']
-                                                                            ? 'bg-red-500 cursor-not-allowed'
-                                                                            : ($posicionSeleccionada == $posicion['id']
-                                                                                ? 'bg-green-500'
-                                                                                : 'bg-blue-500 hover:bg-blue-600') }} text-white font-medium">
-                                                                        {{ $fila + 1 }},{{ $columna + 1 }}
-                                                                    </button>
-                                                                </div>
-                                                            @endforeach
-                                                        @endforeach
-                                                    </div>
-                                                </div>
-                                            @endif --}}
+
 
                                             @if ($estante_id && $posiciones)
                                                 <div>
@@ -387,9 +375,9 @@
                                     </div>
 
                                     <div class="flex flex-row space-x-4">
-                                        <button wire:click="guardar"
+                                        <button wire:click="guardarOActualizar"
                                             class="p-3 bg-black rounded-full text-white w-full font-semibold">
-                                            Guardar
+                                            {{ isset($miReactivo->id) ? 'Actualizar' : 'Crear' }} Reactivo
                                         </button>
                                         <button wire:click="closeModal"
                                             class="p-3 bg-white border rounded-full w-full font-semibold">
@@ -401,6 +389,338 @@
                         </div>
                     </div>
                 @endif
+
+
+                @if ($verModal)
+                    <div
+                        class="fixed left-0 top-0 flex h-full w-full items-center justify-center bg-black bg-opacity-50 py-10">
+                        <div class="max-h-full w-full max-w-xl overflow-y-auto sm:rounded-2xl bg-white">
+                            <div class="w-full">
+                                <div class="m-8 my-20 max-w-[400px] mx-auto">
+                                    <div class="mb-8">
+                                        <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+                                            Informacion Reactivo
+                                        </h3>
+
+                                        <form wire:submit="" class="space-y-4">
+                                            <div>
+                                                <label for="codigo"
+                                                    class="block text-sm font-medium text-gray-700">Código</label>
+                                                <input disabled type="text" id="codigo" wire:model.defer="codigo"
+                                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                                                @error('codigo')
+                                                    <span class="text-red-500 text-xs">{{ $message }}</span>
+                                                @enderror
+                                            </div>
+
+                                            <div>
+                                                <label for="nombre"
+                                                    class="block text-sm font-medium text-gray-700">Nombre</label>
+                                                <input disabled type="text" id="nombre" wire:model.defer="nombre"
+                                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                                                @error('nombre')
+                                                    <span class="text-red-500 text-xs">{{ $message }}</span>
+                                                @enderror
+                                            </div>
+
+                                            <div>
+                                                <label for="disponibilidad"
+                                                    class="block text-sm font-medium text-gray-700">Disponibilidad</label>
+                                                <select disabled id="disponibilidad" wire:model.defer="disponibilidad"
+                                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                                                    <option value="">Seleccione una Disponibilidad</option>
+                                                    <option value="total">Total</option>
+                                                    <option value="media">Media</option>
+                                                    <option value="poca">Poca</option>
+                                                    <option value="no hay">No hay</option>
+                                                </select>
+                                                @error('disponibilidad')
+                                                    <span class="text-red-500 text-xs">{{ $message }}</span>
+                                                @enderror
+                                            </div>
+
+                                            <div>
+                                                <label for="unidad_medida"
+                                                    class="block text-sm font-medium text-gray-700">Unidad de
+                                                    Medida</label>
+                                                <select disabled id="unidad_medida" wire:model.defer="unidad_medida"
+                                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                                                    <option value="">Seleccione una Unidad de Medida</option>
+                                                    <option value="g">Gramos (g)</option>
+                                                    <option value="mg">Miligramos (mg)</option>
+                                                    <option value="ml">Mililitros (ml)</option>
+                                                    <option value="l">Litros (l)</option>
+                                                </select>
+
+                                                @error('unidad_medida')
+                                                    <span class="text-red-500 text-xs">{{ $message }}</span>
+                                                @enderror
+                                            </div>
+
+                                            {{-- (['g', 'mg', 'ml', 'l']), --}}
+                                            <div>
+                                                <label for="cantidad_disponible"
+                                                    class="block text-sm font-medium text-gray-700">Cantidad
+                                                    Disponible</label>
+                                                <input disabled type="number" step="0.01" id="cantidad_disponible"
+                                                    wire:model.defer="cantidad_disponible"
+                                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                                                @error('cantidad_disponible')
+                                                    <span class="text-red-500 text-xs">{{ $message }}</span>
+                                                @enderror
+                                            </div>
+
+                                            <div>
+                                                <label for="codigo_indicacion_peligro"
+                                                    class="block text-sm font-medium text-gray-700">Código de
+                                                    Indicación
+                                                    de Peligro</label>
+                                                <input disabled type="text" id="codigo_indicacion_peligro"
+                                                    wire:model.defer="codigo_indicacion_peligro"
+                                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                                                @error('codigo_indicacion_peligro')
+                                                    <span class="text-red-500 text-xs">{{ $message }}</span>
+                                                @enderror
+                                            </div>
+
+                                            <div>
+                                                <label for="lote"
+                                                    class="block text-sm font-medium text-gray-700">Lote</label>
+                                                <input disabled type="text" id="lote" wire:model.defer="lote"
+                                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                                                @error('lote')
+                                                    <span class="text-red-500 text-xs">{{ $message }}</span>
+                                                @enderror
+                                            </div>
+
+                                            <div>
+                                                <label for="marca"
+                                                    class="block text-sm font-medium text-gray-700">Marca</label>
+                                                <input disabled type="text" id="marca" wire:model.defer="marca"
+                                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                                                @error('marca')
+                                                    <span class="text-red-500 text-xs">{{ $message }}</span>
+                                                @enderror
+                                            </div>
+
+                                            <div>
+                                                <label for="fabricante"
+                                                    class="block text-sm font-medium text-gray-700">Fabricante</label>
+                                                <input disabled type="text" id="fabricante" wire:model.defer="fabricante"
+                                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                                                @error('fabricante')
+                                                    <span class="text-red-500 text-xs">{{ $message }}</span>
+                                                @enderror
+                                            </div>
+
+                                            <div>
+                                                <label for="proveedores"
+                                                    class="block text-sm font-medium text-gray-700">Proveedores</label>
+                                                {{-- <input disabled type="text" id="buscar_proveedor"
+                                                    wire:model.live="buscarProveedor"
+                                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                                                    placeholder="Buscar proveedor..."> --}}
+                                                <div class="mt-2 grid grid-cols-3 gap-4">
+                                                    @foreach ($proveedores as $proveedor)
+                                                        <div class="relative">
+                                                            <button disabled type="button"
+                                                                wire:click="toggleProveedor({{ $proveedor->id }})"
+                                                                class="w-full h-12 flex items-center justify-center rounded-md border {{ in_array($proveedor->id, $proveedoresSeleccionados) ? 'border-blue-500' : 'border-gray-300' }}">
+                                                                {{ $proveedor->nombre }}
+                                                            </button>
+                                                        </div>
+                                                    @endforeach
+                                                </div>
+                                                @error('proveedoresSeleccionados')
+                                                    <span class="text-red-500 text-xs">{{ $message }}</span>
+                                                @enderror
+                                            </div>
+
+                                            <div>
+                                                <label for="categorias"
+                                                    class="block text-sm font-medium text-gray-700">Categorías</label>
+                                                {{-- <input disabled type="text" id="buscar_categoria"
+                                                    wire:model.live="buscarCategoria"
+                                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                                                    placeholder="Buscar categoría..."> --}}
+                                                <div class="mt-2 grid grid-cols-3 gap-4">
+                                                    @if ($buscarCategoria)
+                                                        @foreach ($categorias as $categoria)
+                                                            <div class="relative">
+                                                                <button disabled type="button"
+                                                                    wire:click="toggleCategoria({{ $categoria->id }})"
+                                                                    class="w-full h-12 flex items-center justify-center rounded-md border {{ in_array($categoria->id, $categoriasSeleccionadas) ? 'border-blue-500' : 'border-gray-300' }}">
+                                                                    <span class="font-bold">{{ $categoria->nombre }} 
+                                                                        {{ $categoria->nivel }} |</span>
+                                                                </button>
+                                                            </div>
+                                                        @endforeach
+                                                    @else
+                                                        @foreach ($categoriasSeleccionadas as $categoriaId)
+                                                            @php
+                                                                $categoria = $categorias->firstWhere(
+                                                                    'id',
+                                                                    $categoriaId,
+                                                                );
+                                                            @endphp
+                                                            <div class="relative">
+                                                                <button disabled type="button"
+                                                                    wire:click="toggleCategoria({{ $categoria->id }})"
+                                                                    class="w-full h-12 flex items-center justify-center rounded-md border border-blue-500">
+                                                                    <span class="font-bold">{{ $categoria->nombre }} |
+                                                                        {{ $categoria->nivel }} |</span>
+                                                                </button>
+                                                            </div>
+                                                        @endforeach
+                                                    @endif
+                                                </div>
+                                                @error('categoriasSeleccionadas')
+                                                    <span class="text-red-500 text-xs">{{ $message }}</span>
+                                                @enderror
+                                            </div>
+
+                                            <div>
+                                                <label for="url_ficha_seguridad"
+                                                    class="block text-sm font-medium text-gray-700">URL Ficha de
+                                                    Seguridad</label>
+                                                <input disabled type="url" id="url_ficha_seguridad"
+                                                    wire:model.defer="url_ficha_seguridad"
+                                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                                                @error('url_ficha_seguridad')
+                                                    <span class="text-red-500 text-xs">{{ $message }}</span>
+                                                @enderror
+                                            </div>
+
+                                            <div>
+                                                <label for="fecha_vencimiento"
+                                                    class="block text-sm font-medium text-gray-700">Fecha de
+                                                    Vencimiento</label>
+                                                <input disabled type="text" id="fecha_vencimiento"
+                                                    wire:model="fecha_vencimiento"
+                                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                                                @error('fecha_vencimiento')
+                                                    <span class="text-red-500 text-xs">{{ $message }}</span>
+                                                @enderror
+                                            </div>
+
+                                            <div>
+                                                <label for="pictogramas"
+                                                    class="block text-sm font-medium text-gray-700">Pictogramas</label>
+                                                <div class="grid grid-cols-3 gap-4">
+                                                    @foreach ($pictogramas as $pictograma)
+                                                        <div class="relative">
+
+                                                            @if(in_array($pictograma->id, $pictogramasSeleccionados))
+                                                            <button disabled type="button"
+                                                                wire:click="togglePictograma({{ $pictograma->id }})"
+                                                                class="w-full h-24 flex items-center justify-center rounded-md border {{ in_array($pictograma->id, $pictogramasSeleccionados) ? 'border-blue-500' : 'border-gray-300' }}">
+                                                                <img src="{{ asset('' . $pictograma->imagen) }}"
+                                                                    alt="{{ $pictograma->nombre }}" class="h-full">
+                                                            </button>
+                                                            <span
+                                                                class="absolute bottom-0 left-0 bg-gray-700 text-white text-xs px-2 py-1">{{ $pictograma->nombre }}</span>
+                                                            @endif
+                                                        </div>
+                                                    @endforeach
+                                                </div>
+                                                @error('pictogramasSeleccionados')
+                                                    <span class="text-red-500 text-xs">{{ $message }}</span>
+                                                @enderror
+                                            </div>
+
+                                            <div>
+                                                <label for="estante_id"
+                                                    class="block text-sm font-medium text-gray-700">ID del
+                                                    Estante</label>
+
+
+                                                <select disabled id="estante_id" wire:model.live="estante_id"
+                                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                                                    <option value="">Seleccione un Estante</option>
+                                                    @foreach ($estantes as $estante)
+                                                        <option value="{{ $estante->id }}">
+                                                            {{ $estante->no_estante }} || {{ $estante->descripcion }}
+                                                        </option>
+                                                    @endforeach
+                                                </select>
+                                                @error('estante_id')
+                                                    <span class="text-red-500 text-xs">{{ $message }}</span>
+                                                @enderror
+                                            </div>
+
+
+
+                                            {{-- @if ($estante_id && $posiciones)
+                                                <div>
+                                                    <label
+                                                        class="block text-sm font-medium text-gray-700 mb-2">Seleccione
+                                                        una posición:</label>
+                                                    <div class="grid gap-2"
+                                                        style="grid-template-columns: repeat({{ $estanteSeleccionado->columnas }}, minmax(0, 1fr));">
+                                                        @foreach ($posiciones as $fila => $columnas)
+                                                            @foreach ($columnas as $columna => $posicion)
+                                                                <div>
+                                                                    <button type="button"
+                                                                        wire:click="seleccionarPosicion({{ $posicion['id'] }})"
+                                                                        class="w-full h-12 flex items-center justify-center rounded-md {{ $posicion['ocupada']
+                                                                            ? 'bg-red-500 cursor-not-allowed'
+                                                                            : ($posicionSeleccionada == $posicion['id']
+                                                                                ? 'bg-green-500'
+                                                                                : 'bg-blue-500 hover:bg-blue-600') }} text-white font-medium">
+                                                                        {{ $fila + 1 }},{{ $columna + 1 }}
+                                                                    </button>
+                                                                </div>
+                                                            @endforeach
+                                                        @endforeach
+                                                    </div>
+                                                </div>
+                                            @endif --}}
+
+                                            @if ($estante_id && $posiciones)
+                                                <div>
+                                                    <label
+                                                        class="block text-sm font-medium text-gray-700 mb-2">Posición
+                                                        del Reactivo:</label>
+                                                    <div class="grid gap-2"
+                                                        style="grid-template-columns: repeat({{ $estanteSeleccionado->columnas }}, minmax(0, 1fr));">
+                                                        @foreach ($posiciones as $fila => $columnas)
+                                                            @foreach ($columnas as $columna => $posicion)
+                                                                <div>
+                                                                    <div
+                                                                        class="w-full h-12 flex items-center justify-center rounded-md {{ $posicion['ocupada']
+                                                                            ? ($posicionSeleccionada == $posicion['id']
+                                                                                ? 'bg-green-500'
+                                                                                : 'bg-red-500')
+                                                                            : 'bg-gray-300' }} text-white font-medium">
+                                                                        {{ $fila + 1 }},{{ $columna + 1 }}
+                                                                    </div>
+                                                                </div>
+                                                            @endforeach
+                                                        @endforeach
+                                                    </div>
+                                                </div>
+                                            @endif
+
+                                        </form>
+                                    </div>
+
+                                    <div class="flex flex-row space-x-4">
+                                        {{-- <button wire:click=""
+                                            class="p-3 bg-black rounded-full text-white w-full font-semibold">
+                                            Guardar
+                                        </button> --}}
+                                        <button wire:click="closeVerModal"
+                                            class="p-3 bg-white border rounded-full w-full font-semibold">
+                                            Cancelar
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
+
             </div>
         </div>
     </div>
