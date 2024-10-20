@@ -18,6 +18,9 @@ class ProveedorView extends Component
     public $direction = 'desc';
 
     public $showModal = false;
+    public $verModal = false;
+
+    public $miProveedor = null;
 
     public $nombre;
     public $telefono;
@@ -37,32 +40,81 @@ class ProveedorView extends Component
         $this->resetPage();
     }
 
-    public function openModal(){
-        $this->reset(['nombre', 'telefono', 'direccion', 'ciudad', 'pais']);
+    public function openModal(Proveedor $proveedor = null){
+        
+
+        if($proveedor){
+            $this->miProveedor = $proveedor;
+            $this->nombre = $proveedor->nombre;
+            $this->telefono = $proveedor->telefono;
+            $this->direccion = $proveedor->direccion;
+            $this->ciudad = $proveedor->ciudad;
+            $this->pais = $proveedor->pais;
+
+            
+        }else{
+            $this->reset(['nombre', 'telefono', 'direccion', 'ciudad', 'pais', 'miProveedor']);
+        }
+
         $this->showModal = true;
     }
 
     public function closeModal(){
         $this->showModal = false;
-        $this->reset(['nombre', 'telefono', 'direccion', 'ciudad', 'pais']);
+        $this->reset(['nombre', 'telefono', 'direccion', 'ciudad', 'pais', 'miProveedor']);
+    }
+
+    public function openVerModal(Proveedor $proveedor){
+        $this->reset(['nombre', 'telefono', 'direccion', 'ciudad', 'pais', 'miProveedor']);
+
+        $this->nombre = $proveedor->nombre;
+        $this->telefono = $proveedor->telefono;
+        $this->direccion = $proveedor->direccion;
+        $this->ciudad = $proveedor->ciudad;
+        $this->pais = $proveedor->pais;
+
+        $this->verModal = true;
+    }
+
+    public function closeVerModal(){
+        $this->verModal = false;
+        $this->reset(['nombre', 'telefono', 'direccion', 'ciudad', 'pais', 'miProveedor']);
     }
 
 
-    public function guardar(){
+    public function guardarOActualizar(){
 
         $this->validate();
 
-        Proveedor::create([
-            'nombre' => $this->nombre,
-            'telefono' => $this->telefono,
-            'direccion' => $this->direccion,
-            'ciudad' => $this->ciudad,
-            'pais' => $this->pais
-        ]);
+        if(isset($this->miProveedor->id)){
+            $this->miProveedor->update([
+                'nombre' => $this->nombre,
+                'telefono' => $this->telefono,
+                'direccion' => $this->direccion,
+                'ciudad' => $this->ciudad,
+                'pais' => $this->pais
+            ]);
 
-        $this->closeModal();
+            // $this->miProveedor = null;
+            $this->closeModal();
+            session()->flash('message', 'Proveedor actualizado satisfactoriamente');
+        }else {
 
-        session()->flash('message', 'Proveedor creado satisfactoriamente');
+            Proveedor::create([
+                'nombre' => $this->nombre,
+                'telefono' => $this->telefono,
+                'direccion' => $this->direccion,
+                'ciudad' => $this->ciudad,
+                'pais' => $this->pais
+            ]);
+    
+            $this->closeModal();
+    
+            session()->flash('message', 'Proveedor creado satisfactoriamente');
+
+        }
+
+        
 
     }
 

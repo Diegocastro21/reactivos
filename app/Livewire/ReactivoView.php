@@ -23,6 +23,9 @@ class ReactivoView extends Component
 
     public $modal = false;
 
+    public $verModal = false;
+    public $editarModal = false;
+
     public $codigo;
     public $nombre;
     public $disponibilidad;
@@ -50,6 +53,8 @@ class ReactivoView extends Component
     public $estanteSeleccionado;
 
     public $proveedores = [];
+
+    public $miReactivo = null;
 
     // public $estantes;
     // public $niveles = [];
@@ -143,16 +148,88 @@ class ReactivoView extends Component
         $this->cargarPosiciones();
     }
 
-    public function openModal()
+    public function openModal(Reactivos $reactivo = null)
     {
-        $this->reset(['codigo', 'nombre', 'disponibilidad', 'unidad_medida', 'cantidad_disponible', 'codigo_indicacion_peligro', 'lote', 'marca', 'fabricante', 'url_ficha_seguridad', 'fecha_vencimiento', 'pictogramasSeleccionados', 'proveedoresSeleccionados', 'categoriasSeleccionadas', 'estante_id']);
+
+        if($reactivo){
+
+            $this->miReactivo = $reactivo;
+
+            $this->codigo = $reactivo->codigo;
+            $this->nombre = $reactivo->nombre;
+            $this->disponibilidad = $reactivo->disponibilidad;
+            $this->unidad_medida = $reactivo->unidad_medida;
+            $this->cantidad_disponible = $reactivo->cantidad_disponible;
+            $this->codigo_indicacion_peligro = $reactivo->codigo_indicacion_peligro;
+            $this->lote = $reactivo->lote;
+            $this->marca = $reactivo->marca;
+            $this->fabricante = $reactivo->fabricante;
+            $this->url_ficha_seguridad = $reactivo->url_ficha_seguridad;
+            $this->fecha_vencimiento = $reactivo->fecha_vencimiento ? $reactivo->fecha_vencimiento->format('Y-m-d') : null;
+            $this->estante_id = $reactivo->estante_id;
+
+            // Cargar relaciones y asignarlas a las propiedades correspondientes
+            $this->pictogramasSeleccionados = $reactivo->pictogramas->pluck('id')->toArray();
+            $this->proveedoresSeleccionados = $reactivo->proveedores->pluck('id')->toArray();
+            $this->categoriasSeleccionadas = $reactivo->categorias->pluck('id')->toArray();
+
+
+            // Cargar la posición seleccionada
+            $posicion = Posicion::where('reactivos_id', $reactivo->id)->first();
+            $this->posicionSeleccionada = $posicion ? $posicion->id : null;
+            $this->cargarPosiciones();
+
+        }else {
+
+            $this->reset(['codigo', 'nombre', 'disponibilidad', 'unidad_medida', 'cantidad_disponible', 'codigo_indicacion_peligro', 'lote', 'marca', 'fabricante', 'url_ficha_seguridad', 'fecha_vencimiento', 'pictogramasSeleccionados', 'proveedoresSeleccionados', 'categoriasSeleccionadas', 'buscarCategoria', 'buscarProveedor', 'miReactivo', 'estante_id']);
+
+        }
+        
         $this->modal = true;
+    }
+
+    public function openVerModal(Reactivos $reactivo)
+    {
+        $this->reset(['codigo', 'nombre', 'disponibilidad', 'unidad_medida', 'cantidad_disponible', 'codigo_indicacion_peligro', 'lote', 'marca', 'fabricante', 'url_ficha_seguridad', 'fecha_vencimiento', 'pictogramasSeleccionados', 'proveedoresSeleccionados', 'categoriasSeleccionadas', 'buscarCategoria', 'buscarProveedor', 'miReactivo', 'estante_id']);
+
+        $this->codigo = $reactivo->codigo;
+        $this->nombre = $reactivo->nombre;
+        $this->disponibilidad = $reactivo->disponibilidad;
+        $this->unidad_medida = $reactivo->unidad_medida;
+        $this->cantidad_disponible = $reactivo->cantidad_disponible;
+        $this->codigo_indicacion_peligro = $reactivo->codigo_indicacion_peligro;
+        $this->lote = $reactivo->lote;
+        $this->marca = $reactivo->marca;
+        $this->fabricante = $reactivo->fabricante;
+        $this->url_ficha_seguridad = $reactivo->url_ficha_seguridad;
+        $this->fecha_vencimiento = $reactivo->fecha_vencimiento->format('Y-m-d');
+        $this->estante_id = $reactivo->estante_id;
+
+        // Cargar relaciones y asignarlas a las propiedades correspondientes
+        $this->pictogramasSeleccionados = $reactivo->pictogramas->pluck('id')->toArray();
+        $this->proveedoresSeleccionados = $reactivo->proveedores->pluck('id')->toArray();
+        $this->categoriasSeleccionadas = $reactivo->categorias->pluck('id')->toArray();
+
+
+        // Cargar la posición seleccionada
+        $posicion = Posicion::where('reactivos_id', $reactivo->id)->first();
+        $this->posicionSeleccionada = $posicion ? $posicion->id : null;
+        $this->cargarPosiciones();
+
+
+        $this->verModal = true;
     }
 
     public function closeModal()
     {
         $this->modal = false;
-        $this->reset(['codigo', 'nombre', 'disponibilidad', 'unidad_medida', 'cantidad_disponible', 'codigo_indicacion_peligro', 'lote', 'marca', 'fabricante', 'url_ficha_seguridad', 'fecha_vencimiento','pictogramasSeleccionados', 'proveedoresSeleccionados', 'categoriasSeleccionadas', 'estante_id']);
+        $this->reset(['codigo', 'nombre', 'disponibilidad', 'unidad_medida', 'cantidad_disponible', 'codigo_indicacion_peligro', 'lote', 'marca', 'fabricante', 'url_ficha_seguridad', 'fecha_vencimiento','pictogramasSeleccionados', 'proveedoresSeleccionados', 'categoriasSeleccionadas', 'buscarCategoria', 'buscarProveedor', 'miReactivo', 'estante_id']);
+    }
+
+    public function closeVerModal()
+    {
+        $this->verModal = false;
+        $this->reset(['codigo', 'nombre', 'disponibilidad', 'unidad_medida', 'cantidad_disponible', 'codigo_indicacion_peligro', 'lote', 'marca', 'fabricante', 'url_ficha_seguridad', 'fecha_vencimiento','pictogramasSeleccionados', 'proveedoresSeleccionados', 'categoriasSeleccionadas', 'buscarCategoria', 'buscarProveedor', 'miReactivo', 'estante_id']);
     }
 
     public function cargarPosiciones()
@@ -206,39 +283,84 @@ class ReactivoView extends Component
         }
     }
 
-    public function guardar()
+    public function guardarOActualizar()
     {
+        
         $this->validate();
-
         session()->flash('message', 'Reactivo validado exitosamente.');
 
-        $reactivo = Reactivos::create([
-            'codigo' => $this->codigo,
-            'nombre' => $this->nombre,
-            'disponibilidad' => $this->disponibilidad,
-            'unidad_medida' => $this->unidad_medida,
-            'cantidad_disponible' => $this->cantidad_disponible,
-            'codigo_indicacion_peligro' => $this->codigo_indicacion_peligro,
-            'lote' => $this->lote,
-            'marca' => $this->marca,
-            'fabricante' => $this->fabricante,
-            'url_ficha_seguridad' => $this->url_ficha_seguridad,
-            'fecha_vencimiento' => $this->fecha_vencimiento,
-            'estante_id' => $this->estante_id,
-        ]);
+        if(isset($this->miReactivo->id)){
 
-        // Actualizar la posición
-        Posicion::find($this->posicionSeleccionada)->update(['reactivos_id' => $reactivo->id]);
+           
+            $this->miReactivo->update([
+                'codigo' => $this->codigo,
+                'nombre' => $this->nombre,
+                'disponibilidad' => $this->disponibilidad,
+                'unidad_medida' => $this->unidad_medida,
+                'cantidad_disponible' => $this->cantidad_disponible,
+                'codigo_indicacion_peligro' => $this->codigo_indicacion_peligro,
+                'lote' => $this->lote,
+                'marca' => $this->marca,
+                'fabricante' => $this->fabricante,
+                'url_ficha_seguridad' => $this->url_ficha_seguridad,
+                'fecha_vencimiento' => $this->fecha_vencimiento,
+                'estante_id' => $this->estante_id,
+            ]);
 
-        // Adjuntar pictogramas seleccionados
-        $reactivo->pictogramas()->attach($this->pictogramasSeleccionados);
+             // Actualizar la posición
+            // Posicion::find($this->posicionSeleccionada)->update(['reactivos_id' => $this->miReactivo->id]);
 
-        $reactivo->proveedores()->attach($this->proveedoresSeleccionados);
+            // Liberar la posición anterior
+            Posicion::where('reactivos_id', $this->miReactivo->id)->update(['reactivos_id' => null]);
 
-        $reactivo->categorias()->attach($this->categoriasSeleccionadas);
+            // Asignar la nueva posición
+            Posicion::find($this->posicionSeleccionada)->update(['reactivos_id' => $this->miReactivo->id]);
 
-        $this->closeModal();
-        session()->flash('message', 'Reactivo creado exitosamente.');
+        
+
+            // Actualizar pictogramas
+            $this->miReactivo->pictogramas()->sync($this->pictogramasSeleccionados);
+
+            $this->miReactivo->proveedores()->sync($this->proveedoresSeleccionados);
+
+            $this->miReactivo->categorias()->sync($this->categoriasSeleccionadas);
+
+            $this->closeModal();
+            session()->flash('message', 'Reactivo Actualizado exitosamente.');
+        }else {
+
+            $reactivo = Reactivos::create([
+                'codigo' => $this->codigo,
+                'nombre' => $this->nombre,
+                'disponibilidad' => $this->disponibilidad,
+                'unidad_medida' => $this->unidad_medida,
+                'cantidad_disponible' => $this->cantidad_disponible,
+                'codigo_indicacion_peligro' => $this->codigo_indicacion_peligro,
+                'lote' => $this->lote,
+                'marca' => $this->marca,
+                'fabricante' => $this->fabricante,
+                'url_ficha_seguridad' => $this->url_ficha_seguridad,
+                'fecha_vencimiento' => $this->fecha_vencimiento,
+                'estante_id' => $this->estante_id,
+            ]);
+    
+            // Actualizar la posición
+            Posicion::find($this->posicionSeleccionada)->update(['reactivos_id' => $reactivo->id]);
+    
+            // Adjuntar pictogramas seleccionados
+            $reactivo->pictogramas()->attach($this->pictogramasSeleccionados);
+    
+            $reactivo->proveedores()->attach($this->proveedoresSeleccionados);
+    
+            $reactivo->categorias()->attach($this->categoriasSeleccionadas);
+
+            $this->closeModal();
+            session()->flash('message', 'Reactivo creado exitosamente.');
+
+        }
+
+        
+
     }
 
     public function render()
