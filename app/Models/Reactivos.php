@@ -60,8 +60,10 @@ class Reactivos extends Model
         return $this->belongsToMany(Categorias::class, 'categoria_reactivo');
     }
 
-    public function registros_historicos(): MorphMany
+    // Relación: Un reactivo puede tener muchos registros históricos
+    public function registrosHistoricos()
     {
-        return $this->morphMany(RegistroHistorico::class, 'registros');
+        return $this->hasMany(RegistroHistorico::class, 'reactivos_id');
     }
+
 }

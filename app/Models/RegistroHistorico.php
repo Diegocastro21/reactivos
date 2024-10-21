@@ -9,8 +9,26 @@ class RegistroHistorico extends Model
 {
     use HasFactory;
 
-    public function reactivo(): MorphOne
+    protected $table = 'registro_historico';
+
+    protected $fillable = [
+        'descripcion',
+        'fecha_movimiento',
+        'cantidad',
+        'tipo_transaccion',
+        'user_id',
+        'reactivos_id',
+    ];
+
+     // Relación: Un registro histórico pertenece a un usuario
+     public function usuario()
+     {
+         return $this->belongsTo(User::class, 'user_id');
+     }
+
+
+    public function reactivo()
     {
-        return $this->morphOne(Reactivos::class, 'reactivos');
+        return $this->belongsTo(Reactivos::class, 'reactivos_id');
     }
 }
