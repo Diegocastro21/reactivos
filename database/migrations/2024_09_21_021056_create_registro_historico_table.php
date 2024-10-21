@@ -14,11 +14,11 @@ return new class extends Migration
         Schema::create('registro_historico', function (Blueprint $table) {
             $table->id();
             $table->string('descripcion');
-            $table->date('fecha');
+            $table->timestamp('fecha_movimiento');
             $table->decimal('cantidad', total: 8, places: 2);
-            $table->enum('disponibilidad', ['salida', 'entrada', 'de baja', 'donacion', 'prestamo']);
-            $table->foreignId('user_id');
-            $table->foreignId('reactivos_id');
+            $table->enum('tipo_transaccion', ['salida', 'entrada', 'de baja', 'donacion', 'prestamo']);
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->foreignId('reactivos_id')->constrained('reactivos')->onDelete('cascade');
             $table->timestamps();
         });
     }

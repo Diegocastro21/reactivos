@@ -9,8 +9,11 @@ use App\Models\Posicion;
 use App\Models\Pictogramas;
 use App\Models\Proveedor;
 use App\Models\Categorias;
+use App\Models\RegistroHistorico;
 use Livewire\WithPagination;
 use App\Models\DivisionUbicacionReactivo;
+use App\Mail\ReactivosAlerta;
+use Illuminate\Support\Facades\Mail;
 
 class ReactivoView extends Component
 {
@@ -26,6 +29,8 @@ class ReactivoView extends Component
     public $verModal = false;
     public $editarModal = false;
 
+    public $registroModal = false;
+
     public $codigo;
     public $nombre;
     public $disponibilidad;
@@ -37,6 +42,10 @@ class ReactivoView extends Component
     public $fabricante;
     public $url_ficha_seguridad;
     public $fecha_vencimiento;
+
+    public $cantidad;
+    public $tipo_transaccion;
+    public $descripcion;
     // public $nivel_reactivo;
     // public $columna_estante;
     public $estante_id;
@@ -52,30 +61,65 @@ class ReactivoView extends Component
     public $posiciones;
     public $estanteSeleccionado;
 
+    public $historial = [];
+
     public $proveedores = [];
 
     public $miReactivo = null;
+    public $miReactivoDos = null;
 
     // public $estantes;
     // public $niveles = [];
     // public $columnas = [];
 
-    protected $rules = [
-        'codigo' => 'required|string|max:255',
-        'nombre' => 'required|string|max:255',
-        'disponibilidad' => 'required|in:total,media,poca,no hay',
-        'unidad_medida' => 'required|in:g,mg,ml,l',
-        'cantidad_disponible' => 'required|numeric',
-        'codigo_indicacion_peligro' => 'required|string|max:255',
-        'lote' => 'required|string|max:255',
-        'marca' => 'required|string|max:255',
-        'fabricante' => 'required|string|max:255',
-        'url_ficha_seguridad' => 'required|url|max:255',
-        'fecha_vencimiento' => 'required|date|after:today',
-        // 'nivel_reactivo' => 'required|string',
-        // 'columna_estante' => 'required|string',
-        'estante_id' => 'required|exists:estante,id',
-    ];
+    // protected $rules = [
+    //     'codigo' => 'required|string|max:255',
+    //     'nombre' => 'required|string|max:255',
+    //     'disponibilidad' => 'required|in:total,media,poca,no hay',
+    //     'unidad_medida' => 'required|in:g,mg,ml,l',
+    //     'cantidad_disponible' => 'required|numeric',
+    //     'codigo_indicacion_peligro' => 'required|string|max:255',
+    //     'lote' => 'required|string|max:255',
+    //     'marca' => 'required|string|max:255',
+    //     'fabricante' => 'required|string|max:255',
+    //     'url_ficha_seguridad' => 'required|url|max:255',
+    //     'fecha_vencimiento' => 'required|date|after:today',
+    //     // 'nivel_reactivo' => 'required|string',
+    //     // 'columna_estante' => 'required|string',
+
+    //     'cantidad' => 'required|numeric',
+    //     'descripcion' => 'required|string',
+    //     'tipo_transaccion' => 'required|in:entrada,salida,de baja,donacion,prestamo',
+    //     'estante_id' => 'required|exists:estante,id',
+    // ];
+
+
+    protected function reglasParaReactivo()
+    {
+        return [
+            'codigo' => 'required|string|max:255',
+            'nombre' => 'required|string|max:255',
+            'disponibilidad' => 'required|in:total,media,poca,no hay',
+            'unidad_medida' => 'required|in:g,mg,ml,l',
+            'cantidad_disponible' => 'required|numeric',
+            'codigo_indicacion_peligro' => 'required|string|max:255',
+            'lote' => 'required|string|max:255',
+            'marca' => 'required|string|max:255',
+            'fabricante' => 'required|string|max:255',
+            'url_ficha_seguridad' => 'required|url|max:255',
+            'fecha_vencimiento' => 'required|date|after:today',
+            'estante_id' => 'required|exists:estante,id',
+        ];
+    }
+
+    protected function reglasParaTransaccion()
+    {
+        return [
+            'cantidad' => 'required|numeric|min:0.01',
+            'tipo_transaccion' => 'required|in:entrada,salida,de baja,donacion,prestamo',
+            'descripcion' => 'required|string|max:255',
+        ];
+    }
 
     protected $messages = [
         'fecha_vencimiento.required' => 'La fecha de vencimiento es obligatoria.',
@@ -151,9 +195,15 @@ class ReactivoView extends Component
     public function openModal(Reactivos $reactivo = null)
     {
 
+
+        // logger('Entro a openModal');  
         if($reactivo){
 
+            // logger('Entro a openModal con reactivo');
+
             $this->miReactivo = $reactivo;
+
+            // logger('Reactivo: '.$this->miReactivo);
 
             $this->codigo = $reactivo->codigo;
             $this->nombre = $reactivo->nombre;
@@ -168,6 +218,7 @@ class ReactivoView extends Component
             $this->fecha_vencimiento = $reactivo->fecha_vencimiento ? $reactivo->fecha_vencimiento->format('Y-m-d') : null;
             $this->estante_id = $reactivo->estante_id;
 
+
             // Cargar relaciones y asignarlas a las propiedades correspondientes
             $this->pictogramasSeleccionados = $reactivo->pictogramas->pluck('id')->toArray();
             $this->proveedoresSeleccionados = $reactivo->proveedores->pluck('id')->toArray();
@@ -179,9 +230,13 @@ class ReactivoView extends Component
             $this->posicionSeleccionada = $posicion ? $posicion->id : null;
             $this->cargarPosiciones();
 
+            // logger('Cargando posiciones');
+
         }else {
 
-            $this->reset(['codigo', 'nombre', 'disponibilidad', 'unidad_medida', 'cantidad_disponible', 'codigo_indicacion_peligro', 'lote', 'marca', 'fabricante', 'url_ficha_seguridad', 'fecha_vencimiento', 'pictogramasSeleccionados', 'proveedoresSeleccionados', 'categoriasSeleccionadas', 'buscarCategoria', 'buscarProveedor', 'miReactivo', 'estante_id']);
+            // logger('Entro a openModal sin reactivo');
+
+            $this->reset(['tipo_transaccion','cantidad','descripcion','codigo', 'nombre', 'disponibilidad', 'unidad_medida', 'cantidad_disponible', 'codigo_indicacion_peligro', 'lote', 'marca', 'fabricante', 'url_ficha_seguridad', 'fecha_vencimiento', 'pictogramasSeleccionados', 'proveedoresSeleccionados', 'categoriasSeleccionadas', 'buscarCategoria', 'buscarProveedor', 'miReactivo', 'historial', 'estante_id']);
 
         }
         
@@ -190,7 +245,9 @@ class ReactivoView extends Component
 
     public function openVerModal(Reactivos $reactivo)
     {
-        $this->reset(['codigo', 'nombre', 'disponibilidad', 'unidad_medida', 'cantidad_disponible', 'codigo_indicacion_peligro', 'lote', 'marca', 'fabricante', 'url_ficha_seguridad', 'fecha_vencimiento', 'pictogramasSeleccionados', 'proveedoresSeleccionados', 'categoriasSeleccionadas', 'buscarCategoria', 'buscarProveedor', 'miReactivo', 'estante_id']);
+
+       
+        $this->reset(['tipo_transaccion','cantidad','descripcion','codigo', 'nombre', 'disponibilidad', 'unidad_medida', 'cantidad_disponible', 'codigo_indicacion_peligro', 'lote', 'marca', 'fabricante', 'url_ficha_seguridad', 'fecha_vencimiento', 'pictogramasSeleccionados', 'proveedoresSeleccionados', 'categoriasSeleccionadas', 'buscarCategoria', 'buscarProveedor', 'miReactivo', 'historial', 'estante_id']);
 
         $this->codigo = $reactivo->codigo;
         $this->nombre = $reactivo->nombre;
@@ -204,6 +261,11 @@ class ReactivoView extends Component
         $this->url_ficha_seguridad = $reactivo->url_ficha_seguridad;
         $this->fecha_vencimiento = $reactivo->fecha_vencimiento->format('Y-m-d');
         $this->estante_id = $reactivo->estante_id;
+
+        $this->historial = RegistroHistorico::where('reactivos_id', $reactivo->id)
+        ->with('usuario')
+        ->orderBy('fecha_movimiento', 'desc')
+        ->get();
 
         // Cargar relaciones y asignarlas a las propiedades correspondientes
         $this->pictogramasSeleccionados = $reactivo->pictogramas->pluck('id')->toArray();
@@ -220,16 +282,46 @@ class ReactivoView extends Component
         $this->verModal = true;
     }
 
+    public function openRegistroModal(Reactivos $reactivo = null, $transaccion_actual = null){
+
+        if($reactivo){
+
+            $this->miReactivoDos = $reactivo;
+            $this->nombre = $reactivo->nombre;
+            $this->disponibilidad = $reactivo->disponibilidad;
+            $this->unidad_medida = $reactivo->unidad_medida;
+            $this->cantidad_disponible = $reactivo->cantidad_disponible;
+
+            $this->tipo_transaccion = $transaccion_actual;
+            
+
+        }else {
+
+            $this->reset(['tipo_transaccion','cantidad','descripcion','codigo', 'nombre', 'disponibilidad', 'unidad_medida', 'cantidad_disponible', 'codigo_indicacion_peligro', 'lote', 'marca', 'fabricante', 'url_ficha_seguridad', 'fecha_vencimiento', 'pictogramasSeleccionados', 'proveedoresSeleccionados', 'categoriasSeleccionadas', 'buscarCategoria', 'buscarProveedor', 'miReactivo', 'miReactivoDos', 'historial', 'estante_id']);
+
+        }
+        
+        $this->registroModal = true;
+    }
+
+    public function closeRegistroModal(){
+
+
+        $this->registroModal = false;
+        $this->reset(['tipo_transaccion','cantidad','descripcion','codigo', 'nombre', 'disponibilidad', 'unidad_medida', 'cantidad_disponible', 'codigo_indicacion_peligro', 'lote', 'marca', 'fabricante', 'url_ficha_seguridad', 'fecha_vencimiento','pictogramasSeleccionados', 'proveedoresSeleccionados', 'categoriasSeleccionadas', 'buscarCategoria', 'buscarProveedor', 'miReactivo', 'miReactivoDos', 'historial', 'estante_id']);
+    }
+
+
     public function closeModal()
     {
         $this->modal = false;
-        $this->reset(['codigo', 'nombre', 'disponibilidad', 'unidad_medida', 'cantidad_disponible', 'codigo_indicacion_peligro', 'lote', 'marca', 'fabricante', 'url_ficha_seguridad', 'fecha_vencimiento','pictogramasSeleccionados', 'proveedoresSeleccionados', 'categoriasSeleccionadas', 'buscarCategoria', 'buscarProveedor', 'miReactivo', 'estante_id']);
+        $this->reset(['tipo_transaccion','cantidad','descripcion','codigo', 'nombre', 'disponibilidad', 'unidad_medida', 'cantidad_disponible', 'codigo_indicacion_peligro', 'lote', 'marca', 'fabricante', 'url_ficha_seguridad', 'fecha_vencimiento','pictogramasSeleccionados', 'proveedoresSeleccionados', 'categoriasSeleccionadas', 'buscarCategoria', 'buscarProveedor', 'miReactivo', 'historial', 'estante_id']);
     }
 
     public function closeVerModal()
     {
         $this->verModal = false;
-        $this->reset(['codigo', 'nombre', 'disponibilidad', 'unidad_medida', 'cantidad_disponible', 'codigo_indicacion_peligro', 'lote', 'marca', 'fabricante', 'url_ficha_seguridad', 'fecha_vencimiento','pictogramasSeleccionados', 'proveedoresSeleccionados', 'categoriasSeleccionadas', 'buscarCategoria', 'buscarProveedor', 'miReactivo', 'estante_id']);
+        $this->reset(['tipo_transaccion','cantidad','descripcion','codigo', 'nombre', 'disponibilidad', 'unidad_medida', 'cantidad_disponible', 'codigo_indicacion_peligro', 'lote', 'marca', 'fabricante', 'url_ficha_seguridad', 'fecha_vencimiento','pictogramasSeleccionados', 'proveedoresSeleccionados', 'categoriasSeleccionadas', 'buscarCategoria', 'buscarProveedor', 'miReactivo', 'historial', 'estante_id']);
     }
 
     public function cargarPosiciones()
@@ -283,14 +375,127 @@ class ReactivoView extends Component
         }
     }
 
+
+    public function usarOIngresar(){
+
+
+        // $this->validate();
+        $this->validate($this->reglasParaTransaccion());
+
+        if ($this->tipo_transaccion === 'entrada') {
+            $this->miReactivoDos->cantidad_disponible += $this->cantidad;
+            // Asegurarse de que la cantidad no exceda la cantidad disponible
+
+            $this->actualizarDisponibilidad();
+            // Guardar el historial
+            RegistroHistorico::create([
+                'descripcion' => $this->descripcion,
+                'fecha_movimiento' => now(),
+                'cantidad' => $this->cantidad,
+                'tipo_transaccion' => $this->tipo_transaccion,
+                'user_id' => auth()->user()->id,
+                'reactivos_id' => $this->miReactivoDos->id,
+            ]);
+
+            $this->miReactivoDos->save();
+        
+        } else {
+            if ($this->cantidad > $this->miReactivoDos->cantidad_disponible) {
+                $this->addError('cantidad', 'La cantidad excede la cantidad disponible.');
+                return;
+            }
+
+            $this->miReactivoDos->cantidad_disponible -= $this->cantidad;
+
+            $this->actualizarDisponibilidad();
+            // Guardar el historial
+            RegistroHistorico::create([
+                'descripcion' => $this->descripcion,
+                'fecha_movimiento' => now(),
+                'cantidad' => $this->cantidad,
+                'tipo_transaccion' => $this->tipo_transaccion,
+                'user_id' => auth()->user()->id,
+                'reactivos_id' => $this->miReactivoDos->id,
+            ]);
+
+            $this->miReactivoDos->save();
+        }
+
+        // Ajustar la disponibilidad automáticamente
+        
+
+        
+
+        
+        $this->closeRegistroModal();
+        session()->flash('message', 'Transacción realizada exitosamente.');
+
+    }
+
+    // Actualizar la disponibilidad del reactivo
+    protected function actualizarDisponibilidad()
+    {
+        $cantidad_reactivo = $this->miReactivoDos->cantidad_disponible;
+        $unidad = $this->miReactivoDos->unidad_medida;
+        $disponibilidadAnterior = $this->miReactivoDos->disponibilidad;
+
+        if ($cantidad_reactivo <= 0) {
+            $this->miReactivoDos->disponibilidad = 'no hay';
+        } elseif (in_array($unidad, ['g', 'mg'])) {
+            // Para sólidos
+            if ($cantidad_reactivo < 100) {
+                $this->miReactivoDos->disponibilidad = 'poca';
+            } elseif ($cantidad_reactivo < 500) {
+                $this->miReactivoDos->disponibilidad = 'media';
+            } else {
+                $this->miReactivoDos->disponibilidad = 'total';
+            }
+        } elseif (in_array($unidad, ['ml', 'l'])) {
+            // Para líquidos
+            if ($cantidad_reactivo < 250) {
+                $this->miReactivoDos->disponibilidad = 'poca';
+            } elseif ($cantidad_reactivo < 1000) {
+                $this->miReactivoDos->disponibilidad = 'media';
+            } else {
+                $this->miReactivoDos->disponibilidad = 'total';
+            }
+        } else {
+            // Para otras unidades de medida no especificadas
+            $this->miReactivoDos->disponibilidad = 'poca'; // O cualquier otro valor por defecto que prefieras
+        }
+
+        // Si la disponibilidad cambia a 'poca' o 'no hay' y no es la misma que antes, enviar correo
+        if (in_array($this->miReactivoDos->disponibilidad, ['poca', 'no hay']) &&
+            $this->miReactivoDos->disponibilidad !== $disponibilidadAnterior) {
+            
+            $mensaje = $this->miReactivoDos->disponibilidad === 'no hay' 
+                ? 'Este reactivo ya se ha agotado.'
+                : 'El reactivo está a punto de agotarse.';
+            
+            // Enviar correo al usuario (puedes especificar el correo del administrador o usuario relevante)
+            Mail::to(auth()->user()->email)->send(new ReactivosAlerta($this->miReactivoDos, $mensaje));
+        }
+
+        $this->miReactivoDos->save();
+    }
+
+
+
     public function guardarOActualizar()
     {
         
-        $this->validate();
+
+        // $this->validate();
+
+        $this->validate($this->reglasParaReactivo());
+
+
         session()->flash('message', 'Reactivo validado exitosamente.');
 
-        if(isset($this->miReactivo->id)){
+       
 
+        if(isset($this->miReactivo->id)){
+            logger('valido reactivo id');  
            
             $this->miReactivo->update([
                 'codigo' => $this->codigo,
@@ -306,6 +511,8 @@ class ReactivoView extends Component
                 'fecha_vencimiento' => $this->fecha_vencimiento,
                 'estante_id' => $this->estante_id,
             ]);
+
+
 
              // Actualizar la posición
             // Posicion::find($this->posicionSeleccionada)->update(['reactivos_id' => $this->miReactivo->id]);
@@ -325,8 +532,11 @@ class ReactivoView extends Component
 
             $this->miReactivo->categorias()->sync($this->categoriasSeleccionadas);
 
+
             $this->closeModal();
             session()->flash('message', 'Reactivo Actualizado exitosamente.');
+
+
         }else {
 
             $reactivo = Reactivos::create([
@@ -358,9 +568,6 @@ class ReactivoView extends Component
             session()->flash('message', 'Reactivo creado exitosamente.');
 
         }
-
-        
-
     }
 
     public function render()
