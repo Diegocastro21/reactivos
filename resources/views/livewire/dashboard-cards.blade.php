@@ -86,7 +86,7 @@
                 </div>
                 <div class="ml-4">
                     <h4 class="text-2xl font-semibold">9</h4>
-                    <p class="text-gray-600">Reactivos Desactivados</p>
+                    <p class="text-gray-600">Reactivos Dados De Baja</p>
                 </div>
             </div>
         </div>
