@@ -80,7 +80,7 @@
                                             </button> | <button
                                                 wire:click="openRegistroModal({{ $reactivo }}, 'salida')"
                                                 class=" p-2 bg-red-500 text-white rounded-md ">
-                                                Usar
+                                                Consumir
                                             </button>
                                             | <button wire:click="openRegistroModal({{ $reactivo }}, 'entrada')"
                                                 class=" p-2 bg-red-500 text-white rounded-md ">
